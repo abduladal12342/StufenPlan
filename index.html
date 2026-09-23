@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Stufenplan — private, browser-only task management.">
+<meta name="theme-color" content="#f7f6f2">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Stufenplan">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Stufenplan</title>
+<style>
+:root{
+  --bg:#f7f6f2; --panel:#fffefa; --panel2:#f1f0eb; --text:#252422; --muted:#77736b;
+  --border:#e4e1da; --shadow:0 2px 12px rgba(30,28,24,.045); --accent:#2f2d2a;
+  --blue:#5b7cfa; --danger:#c94c4c;
+  --z:#d84a4a; --a:#4d9b67; --b:#d3a52c; --c:#9a9a9a;
+}
+@media(prefers-color-scheme:dark){
+ :root{--bg:#191918;--panel:#232321;--panel2:#2b2b28;--text:#eeece7;--muted:#aaa69e;--border:#393934;--shadow:0 2px 14px rgba(0,0,0,.22);--accent:#f1eee8}
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+.app{display:flex;min-height:100vh}
+.sidebar{width:245px;flex:0 0 245px;border-right:1px solid var(--border);padding:28px 16px;background:var(--bg);position:sticky;top:0;height:100vh}
+.brand{font-weight:750;font-size:22px;letter-spacing:-.5px;padding:0 10px 25px}
+.brand small{display:block;color:var(--muted);font-size:11px;font-weight:500;margin-top:4px;letter-spacing:.2px}
+.nav-title{font-size:11px;text-transform:uppercase;color:var(--muted);padding:8px 10px;margin-top:8px;letter-spacing:.08em}
+.nav button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;padding:10px;border-radius:7px;text-align:left;color:var(--muted)}
+.nav button:hover,.nav button.active{background:var(--panel2);color:var(--text)}
+.legend{padding:8px 10px;color:var(--muted);font-size:12px;line-height:1.8}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:7px}
+.dot.z{background:var(--z)}.dot.a{background:var(--a)}.dot.b{background:var(--b)}.dot.c{background:var(--c)}
+.privacy{position:absolute;bottom:20px;left:26px;right:20px;font-size:11px;color:var(--muted);line-height:1.45}
+.main{flex:1;min-width:0;max-width:1200px;margin:0 auto;padding:34px 34px 70px;width:100%}
+.top{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:22px}
+.heading h1{margin:0;font-size:30px;letter-spacing:-1px}.heading p{margin:6px 0 0;color:var(--muted);font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--border);background:var(--panel);border-radius:7px;padding:9px 12px;font-size:13px}
+.btn:hover{background:var(--panel2)}
+.btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.btn.danger{color:var(--danger)}
+.stats{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:24px}
+.stat{background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:14px 15px;box-shadow:var(--shadow)}
+.stat .num{font-size:23px;font-weight:700}.stat .label{font-size:11px;color:var(--muted);margin-top:3px}
+.progress{height:5px;background:var(--panel2);border-radius:10px;margin-top:11px;overflow:hidden}.progress i{display:block;height:100%;background:var(--a);width:0;transition:width .25s}
+.composer{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;box-shadow:var(--shadow)}
+.composer-grid{display:grid;grid-template-columns:2fr 1fr 120px 140px 140px;gap:9px}
+.field{border:1px solid var(--border);background:var(--bg);border-radius:7px;padding:10px 11px;outline:none;width:100%}
+.field:focus{border-color:#aaa}
+textarea.field{resize:vertical;min-height:42px}
+.composer-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px}
+.presets{display:flex;gap:5px;flex-wrap:wrap}.chip{border:1px solid var(--border);background:transparent;border-radius:99px;padding:6px 9px;font-size:11px}
+.presets .chip:hover{background:var(--panel2)}
+.toolbar{display:flex;gap:9px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.search{flex:1;min-width:190px}.search input{width:100%;padding:10px 12px;border:1px solid var(--border);background:var(--panel);border-radius:7px;outline:none}
+.filters{display:flex;gap:5px}.filters button{border:1px solid var(--border);background:var(--panel);padding:8px 10px;border-radius:7px;font-size:12px}.filters button.active{background:var(--panel2);font-weight:650}
+.sort{border:1px solid var(--border);background:var(--panel);padding:8px 10px;border-radius:7px;font-size:12px}
+.list{display:flex;flex-direction:column;gap:9px}
+.task{background:var(--panel);border:1px solid var(--border);border-left:4px solid var(--c);border-radius:9px;padding:14px 15px;box-shadow:var(--shadow)}
+.task.z{border-left-color:var(--z)}.task.a{border-left-color:var(--a)}.task.b{border-left-color:var(--b)}.task.c{border-left-color:var(--c)}
+.task.done{opacity:.7}
+.task-head{display:flex;align-items:flex-start;gap:10px}
+.check{appearance:none;width:18px;height:18px;border:1px solid var(--border);border-radius:4px;margin-top:2px;flex:0 0 auto;background:var(--bg);cursor:pointer;position:relative}
+.check:checked{background:var(--a);border-color:var(--a)}
+.check:checked:after{content:"✓";position:absolute;color:white;font-size:12px;left:3px;top:-1px}
+.task-main{min-width:0;flex:1}
+.editable{outline:none;border-radius:4px;padding:1px 3px;margin-left:-3px}
+.editable:focus{background:var(--bg);box-shadow:inset 0 0 0 1px var(--border)}
+.title{font-weight:650;font-size:15px;line-height:1.35}.done .title{text-decoration:line-through}
+.desc{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.45;white-space:pre-wrap}
+.meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:10px}
+.rank,.status{border:0;border-radius:99px;padding:4px 8px;font-size:10px;font-weight:650;cursor:pointer}
+.rank.z{background:color-mix(in srgb,var(--z) 13%,transparent);color:var(--z)}
+.rank.a{background:color-mix(in srgb,var(--a) 13%,transparent);color:var(--a)}
+.rank.b{background:color-mix(in srgb,var(--b) 15%,transparent);color:#987500}
+.rank.c{background:var(--panel2);color:var(--muted)}
+.status{background:var(--panel2);color:var(--muted)}
+.due{font-size:11px;color:var(--muted)}
+.overdue{color:var(--danger);font-weight:650}
+.task-actions{display:flex;gap:4px}
+.iconbtn{border:0;background:transparent;color:var(--muted);padding:5px;border-radius:5px}.iconbtn:hover{background:var(--panel2);color:var(--text)}
+.subtasks{margin:12px 0 0 28px;border-top:1px solid var(--border);padding-top:9px}
+.sub-row{display:flex;align-items:center;gap:7px;margin:6px 0;font-size:12px}
+.sub-row input{accent-color:var(--a)}
+.sub-row span{flex:1}.sub-row.done span{text-decoration:line-through;color:var(--muted)}
+.add-sub{border:0;background:transparent;color:var(--muted);font-size:11px;padding:4px 0}
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.column{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px;min-height:300px}
+.col-head{display:flex;justify-content:space-between;align-items:center;padding:4px 5px 10px;font-size:12px;font-weight:700}.col-count{color:var(--muted);font-weight:500}
+.board .task{background:var(--panel);margin-bottom:8px}.board .task:last-child{margin-bottom:0}
+.dragging{opacity:.45}.drop-target{outline:2px dashed var(--border)}
+.empty{text-align:center;color:var(--muted);padding:45px 15px;font-size:13px}
+.mobile-tabs{display:none}
+.modal-file{display:none}
+@media(max-width:900px){
+ .sidebar{display:none}.mobile-tabs{display:flex;position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--border);padding:8px;gap:5px;overflow:auto}
+ .mobile-tabs button{white-space:nowrap;border:1px solid var(--border);background:var(--panel);border-radius:7px;padding:8px 11px;font-size:12px}.mobile-tabs button.active{background:var(--panel2);font-weight:650}
+ .main{padding:22px 15px 55px}.stats{grid-template-columns:repeat(4,1fr)}.composer-grid{grid-template-columns:1fr 1fr}.composer-grid .wide{grid-column:1/-1}
+}
+@media(max-width:620px){
+ .top{align-items:flex-start;flex-direction:column}.heading h1{font-size:26px}.actions{width:100%}
+ .stats{grid-template-columns:repeat(2,1fr)}.composer-grid{grid-template-columns:1fr}.composer-grid .wide{grid-column:auto}
+ .toolbar{align-items:stretch}.filters{overflow:auto}.filters button{white-space:nowrap}.sort{width:100%}
+ .board{grid-template-columns:1fr}
+ .task{padding:12px}.privacy{display:none}
+}
+</style>
+</head>
+<body>
+<div class="mobile-tabs" id="mobileTabs"></div>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand">Stufenplan<small>Private task management</small></div>
+  <div class="nav-title">Views</div>
+  <nav class="nav" id="nav"></nav>
+  <div class="nav-title">Rank legend</div>
+  <div class="legend">
+    <div><span class="dot z"></span><b>Z-Rank</b> — Critical</div>
+    <div><span class="dot a"></span><b>A-Rank</b> — Highly Productive</div>
+    <div><span class="dot b"></span><b>B-Rank</b> — Neutral</div>
+    <div><span class="dot c"></span><b>C-Rank</b> — Unimportant</div>
+  </div>
+  <div class="privacy">Everything stays in this browser.<br>No account · no server · no analytics.</div>
+</aside>
+
+<main class="main">
+  <header class="top">
+    <div class="heading"><h1 id="pageTitle">All Tasks</h1><p id="pageSubtitle">A calm place to organize what matters.</p></div>
+    <div class="actions">
+      <button class="btn" id="exportBtn">Export JSON</button>
+      <button class="btn" id="importBtn">Import JSON</button>
+      <button class="btn primary" id="focusNew">+ New task</button>
+      <input class="modal-file" type="file" id="fileInput" accept=".json,application/json">
+    </div>
+  </header>
+
+  <section class="stats">
+    <div class="stat"><div class="num" id="sTotal">0</div><div class="label">Total tasks</div></div>
+    <div class="stat"><div class="num" id="sDone">0</div><div class="label">Completed</div></div>
+    <div class="stat"><div class="num" id="sZ">0</div><div class="label">Z-Rank</div></div>
+    <div class="stat"><div class="num" id="sA">0</div><div class="label">A-Rank</div></div>
+    <div class="stat"><div class="num" id="sB">0</div><div class="label">B-Rank</div></div>
+    <div class="stat"><div class="num" id="sC">0</div><div class="label">C-Rank</div></div>
+    <div class="stat"><div class="num" id="sProgressText">0%</div><div class="label">Overall progress</div><div class="progress"><i id="sProgress"></i></div></div>
+  </section>
+
+  <section class="composer">
+    <div class="composer-grid">
+      <input class="field wide" id="newTitle" placeholder="Task title…" autocomplete="off">
+      <input class="field" id="newDesc" placeholder="Description (optional)" autocomplete="off">
+      <select class="field" id="newRank"><option value="Z">🔴 Z-Rank</option><option value="A" selected>🟢 A-Rank</option><option value="B">🟡 B-Rank</option><option value="C">⚪ C-Rank</option></select>
+      <select class="field" id="newStatus"><option>To Do</option><option>In Progress</option><option>Done</option></select>
+      <input class="field" type="date" id="newDue">
+    </div>
+    <div class="composer-bottom">
+      <div class="presets"><span style="font-size:11px;color:var(--muted);padding:6px 2px">Due:</span><button class="chip" data-preset="today">Today</button><button class="chip" data-preset="tomorrow">Tomorrow</button><button class="chip" data-preset="nextweek">Next week</button></div>
+      <button class="btn primary" id="addBtn">Add task</button>
+    </div>
+  </section>
+
+  <div class="toolbar" id="listToolbar">
+    <div class="search"><input id="search" placeholder="Search title or description…  /" autocomplete="off"></div>
+    <div class="filters" id="filters"></div>
+    <select class="sort" id="sort"><option value="rank">Sort: Rank</option><option value="due">Sort: Due date</option><option value="status">Sort: Status</option><option value="created">Sort: Newest</option></select>
+  </div>
+
+  <section id="content"></section>
+</main>
+</div>
+
+<script>
+(() => {
+const KEY="stufenplan.tasks.v1";
+const ranks=["Z","A","B","C"];
+const statuses=["To Do","In Progress","Done"];
+const rankName={Z:"Z-Rank",A:"A-Rank",B:"B-Rank",C:"C-Rank"};
+const rankEmoji={Z:"🔴",A:"🟢",B:"🟡",C:"⚪"};
+const viewNames={list:"All Tasks",today:"Today",upcoming:"Upcoming",overdue:"Overdue",done:"Done",board:"Board"};
+let tasks=load(), view="list", filter="all", searchTerm="", sort="rank", dragId=null;
+
+function load(){
+ try{const x=JSON.parse(localStorage.getItem(KEY)||"[]");return Array.isArray(x)?x:[]}
+ catch{return []}
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(tasks));}
+function uid(){return crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2)}
+function isoDate(d){return d.toISOString().slice(0,10)}
+function localToday(){let d=new Date();return isoDate(new Date(d.getTime()-d.getTimezoneOffset()*60000))}
+function dateAdd(n){let d=new Date();d.setDate(d.getDate()+n);return isoDate(d)}
+function fmtDate(s){if(!s)return "No due date";let d=new Date(s+"T00:00:00");return d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:d.getFullYear()===new Date().getFullYear()?undefined:"numeric"})}
+function isOverdue(t){return t.dueDate && t.dueDate<localToday() && t.status!=="Done"}
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function rankClass(r){return (r||"C").toLowerCase()}
+function statusNext(s){return statuses[(statuses.indexOf(s)+1)%statuses.length]}
+
+function addTask(){
+ const title=newTitle.value.trim(); if(!title){newTitle.focus();return}
+ tasks.unshift({id:uid(),title,description:newDesc.value.trim(),rank:newRank.value,status:newStatus.value,dueDate:newDue.value||"",subtasks:[],createdAt:Date.now()});
+ save(); newTitle.value="";newDesc.value="";render();newTitle.focus();
+}
+function update(id,patch){const t=tasks.find(x=>x.id===id);if(t){Object.assign(t,patch);save();render()}}
+function deleteTask(id){if(confirm("Delete this task?")){tasks=tasks.filter(t=>t.id!==id);save();render()}}
+function cycleStatus(id){const t=tasks.find(x=>x.id===id);if(t)update(id,{status:statusNext(t.status)})}
+function toggleComplete(id){const t=tasks.find(x=>x.id===id);if(t)update(id,{status:t.status==="Done"?"To Do":"Done"})}
+function editInline(el,id,key){
+ const old=tasks.find(t=>t.id===id)?.[key]||"";
+ el.contentEditable="true";el.focus();
+ const finish=()=>{el.contentEditable="false";let v=el.innerText.trim();if(v!==old)update(id,{[key]:v});else render()};
+ el.onblur=finish;el.onkeydown=e=>{if(e.key==="Enter"&&key==="title"){e.preventDefault();el.blur()} if(e.key==="Escape"){el.innerText=old;el.blur()}};
+}
+function addSub(id){
+ const text=prompt("Subtask name:");if(!text?.trim())return;
+ const t=tasks.find(x=>x.id===id);t.subtasks.push({id:uid(),text:text.trim(),done:false});save();render();
+}
+function toggleSub(tid,sid){const t=tasks.find(x=>x.id===tid),s=t?.subtasks.find(x=>x.id===sid);if(s){s.done=!s.done;save();render()}}
+function deleteSub(tid,sid){const t=tasks.find(x=>x.id===tid);if(t){t.subtasks=t.subtasks.filter(s=>s.id!==sid);save();render()}}
+function filtered(){
+ let arr=[...tasks], today=localToday();
+ if(view==="today")arr=arr.filter(t=>t.dueDate===today && t.status!=="Done");
+ if(view==="upcoming")arr=arr.filter(t=>t.dueDate>today && t.status!=="Done");
+ if(view==="overdue")arr=arr.filter(isOverdue);
+ if(view==="done")arr=arr.filter(t=>t.status==="Done");
+ if(filter==="done")arr=arr.filter(t=>t.status==="Done");
+ if(searchTerm)arr=arr.filter(t=>(t.title+" "+t.description).toLowerCase().includes(searchTerm.toLowerCase()));
+ const rankOrder={Z:0,A:1,B:2,C:3},statusOrder={"To Do":0,"In Progress":1,"Done":2};
+ arr.sort((a,b)=>{
+  if(sort==="rank")return (rankOrder[a.rank]-rankOrder[b.rank])||((a.dueDate||"9999").localeCompare(b.dueDate||"9999"));
+  if(sort==="due")return (a.dueDate||"9999").localeCompare(b.dueDate||"9999");
+  if(sort==="status")return statusOrder[a.status]-statusOrder[b.status];
+  return b.createdAt-a.createdAt;
+ });
+ return arr;
+}
+function taskHTML(t,board=false){
+ const subs=t.subtasks||[], done=subs.filter(s=>s.done).length;
+ return `<article class="task ${rankClass(t.rank)} ${t.status==="Done"?"done":""}" draggable="${board}" data-id="${t.id}">
+   <div class="task-head">
+    <input class="check" type="checkbox" ${t.status==="Done"?"checked":""} aria-label="Complete task">
+    <div class="task-main">
+      <div class="title editable" data-key="title">${escapeHtml(t.title)}</div>
+      ${t.description?`<div class="desc editable" data-key="description">${escapeHtml(t.description)}</div>`:`<div class="desc editable" data-key="description" style="opacity:.45">Add description…</div>`}
+      <div class="meta">
+       <button class="rank ${rankClass(t.rank)}" data-action="rank">${rankEmoji[t.rank]} ${rankName[t.rank]}</button>
+       <button class="status" data-action="status">${escapeHtml(t.status)}</button>
+       ${t.dueDate?`<span class="due ${isOverdue(t)?"overdue":""}">Due ${fmtDate(t.dueDate)}</span>`:""}
+       ${subs.length?`<span class="due">· ${done}/${subs.length}</span>`:""}
+      </div>
+    </div>
+    <div class="task-actions"><button class="iconbtn" data-action="sub" title="Add subtask">＋</button><button class="iconbtn" data-action="delete" title="Delete">×</button></div>
+   </div>
+   ${subs.length?`<div class="subtasks">${subs.map(s=>`<div class="sub-row ${s.done?"done":""}"><input type="checkbox" ${s.done?"checked":""} data-sub="${s.id}"><span>${escapeHtml(s.text)}</span><button class="iconbtn" data-del-sub="${s.id}">×</button></div>`).join("")}</div>`:""}
+ </article>`;
+}
+function bindTasks(root){
+ root.querySelectorAll(".task").forEach(el=>{
+  const id=el.dataset.id;
+  el.querySelector(".check").onclick=()=>toggleComplete(id);
+  el.querySelectorAll(".editable").forEach(e=>{
+   const key=e.dataset.key;
+   e.onclick=()=>editInline(e,id,key);
+   if(key==="description" && !tasks.find(t=>t.id===id).description)e.onclick=()=>{e.innerText="";editInline(e,id,key)}
+  });
+  el.querySelector('[data-action="status"]').onclick=()=>cycleStatus(id);
+  el.querySelector('[data-action="rank"]').onclick=()=>{let t=tasks.find(x=>x.id===id),i=ranks.indexOf(t.rank);update(id,{rank:ranks[(i+1)%ranks.length]})};
+  el.querySelector('[data-action="delete"]').onclick=()=>deleteTask(id);
+  el.querySelector('[data-action="sub"]').onclick=()=>addSub(id);
+  el.querySelectorAll("[data-sub]").forEach(s=>s.onchange=()=>toggleSub(id,s.dataset.sub));
+  el.querySelectorAll("[data-del-sub]").forEach(s=>s.onclick=()=>deleteSub(id,s.dataset.delSub));
+  if(view==="board"){
+   el.ondragstart=()=>{dragId=id;el.classList.add("dragging")};
+   el.ondragend=()=>{dragId=null;el.classList.remove("dragging")};
+  }
+ });
+}
+function renderList(){
+ const arr=filtered(); content.innerHTML=arr.length?`<div class="list">${arr.map(t=>taskHTML(t)).join("")}</div>`:`<div class="empty">No tasks here.</div>`;bindTasks(content);
+}
+function renderBoard(){
+ content.innerHTML=`<div class="board">${statuses.map(s=>{
+  const arr=tasks.filter(t=>t.status===s && (!searchTerm || (t.title+" "+t.description).toLowerCase().includes(searchTerm.toLowerCase())));
+  return `<div class="column" data-status="${s}"><div class="col-head"><span>${s}</span><span class="col-count">${arr.length}</span></div>${arr.length?arr.map(t=>taskHTML(t,true)).join(""):`<div class="empty">Drop tasks here</div>`}</div>`
+ }).join("")}</div>`;
+ bindTasks(content);
+ content.querySelectorAll(".column").forEach(c=>{
+  c.ondragover=e=>{e.preventDefault();c.classList.add("drop-target")};
+  c.ondragleave=()=>c.classList.remove("drop-target");
+  c.ondrop=e=>{e.preventDefault();c.classList.remove("drop-target");if(dragId){const t=tasks.find(x=>x.id===dragId);if(t){t.status=c.dataset.status;save();render()}}};
+ });
+}
+function renderNav(){
+ const items=[["list","☰","All Tasks"],["today","◷","Today"],["upcoming","→","Upcoming"],["overdue","!","Overdue"],["done","✓","Done"],["board","▦","Board"]];
+ nav.innerHTML=items.map(x=>`<button class="${view===x[0]?"active":""}" data-view="${x[0]}"><span>${x[1]}</span>${x[2]}</button>`).join("");
+ nav.querySelectorAll("button").forEach(b=>b.onclick=()=>{view=b.dataset.view;render()});
+ mobileTabs.innerHTML=items.map(x=>`<button class="${view===x[0]?"active":""}" data-view="${x[0]}">${x[2]}</button>`).join("");
+ mobileTabs.querySelectorAll("button").forEach(b=>b.onclick=()=>{view=b.dataset.view;render()});
+}
+function renderFilters(){
+ filters.innerHTML=[["all","All"],["today","Today"],["upcoming","Upcoming"],["overdue","Overdue"],["done","Done"]].map(x=>`<button class="${filter===x[0]?"active":""}" data-filter="${x[0]}">${x[1]}</button>`).join("");
+ filters.querySelectorAll("button").forEach(b=>b.onclick=()=>{filter=b.dataset.filter;render()});
+}
+function renderStats(){
+ const total=tasks.length,done=tasks.filter(t=>t.status==="Done").length;
+ sTotal.textContent=total;sDone.textContent=done;sZ.textContent=tasks.filter(t=>t.rank==="Z").length;sA.textContent=tasks.filter(t=>t.rank==="A").length;sB.textContent=tasks.filter(t=>t.rank==="B").length;sC.textContent=tasks.filter(t=>t.rank==="C").length;const pct=total?Math.round(done/total*100):0;sProgress.style.width=pct+"%";sProgressText.textContent=pct+"%";
+}
+function render(){
+ renderNav();renderFilters();renderStats();
+ pageTitle.textContent=viewNames[view]||"All Tasks";
+ pageSubtitle.textContent=view==="board"?"Drag tasks between columns to change status.":"A calm place to organize what matters.";
+ listToolbar.style.display=view==="board"?"none":"flex";
+ if(view==="board")renderBoard();else renderList();
+}
+document.querySelectorAll("[data-preset]").forEach(b=>b.onclick=()=>{newDue.value=b.dataset.preset==="today"?dateAdd(0):b.dataset.preset==="tomorrow"?dateAdd(1):dateAdd(7)});
+addBtn.onclick=addTask;newTitle.onkeydown=e=>{if(e.key==="Enter")addTask()};
+search.oninput=e=>{searchTerm=e.target.value;render()};
+sort.onchange=e=>{sort=e.target.value;render()};
+focusNew.onclick=()=>{newTitle.focus();window.scrollTo({top:0,behavior:"smooth"})};
+document.addEventListener("keydown",e=>{
+ if(e.key==="/" && document.activeElement.tagName!=="INPUT" && document.activeElement.tagName!=="TEXTAREA" && !document.activeElement.isContentEditable){e.preventDefault();search.focus()}
+ if(e.key.toLowerCase()==="n" && document.activeElement.tagName!=="INPUT" && document.activeElement.tagName!=="TEXTAREA" && !document.activeElement.isContentEditable){e.preventDefault();newTitle.focus()}
+});
+exportBtn.onclick=()=>{
+ const blob=new Blob([JSON.stringify({app:"Stufenplan",version:1,exportedAt:new Date().toISOString(),tasks},null,2)],{type:"application/json"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="stufenplan-tasks.json";a.click();URL.revokeObjectURL(a.href);
+};
+importBtn.onclick=()=>fileInput.click();
+fileInput.onchange=async()=>{
+ const f=fileInput.files[0];if(!f)return;
+ try{const data=JSON.parse(await f.text());const incoming=Array.isArray(data)?data:data.tasks;if(!Array.isArray(incoming))throw Error();
+  if(confirm(`Import ${incoming.length} task(s)? This will replace your current tasks.`)){tasks=incoming.map(t=>({...t,id:t.id||uid(),subtasks:Array.isArray(t.subtasks)?t.subtasks:[]}));save();render()}
+ }catch{alert("That file is not a valid Stufenplan JSON export.")}
+ fileInput.value="";
+};
+render();
+})();
+</script>
+
+<script>
+if ("serviceWorker" in navigator && location.protocol !== "file:") {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
+</script>
+
+</body>
+</html>
